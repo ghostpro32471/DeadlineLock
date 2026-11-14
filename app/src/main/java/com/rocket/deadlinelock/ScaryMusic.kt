@@ -51,12 +51,19 @@ class ScaryMusic {
         while (running) {
             for (i in chunk.indices) {
                 val t = sampleIndex.toDouble() / sampleRate
-                val drone = sin(twoPi * 55.0 * t) * 0.45 + sin(twoPi * 55.6 * t) * 0.45
-                val pulse = if (sin(twoPi * 2.0 * t) > 0.85) 1.0 else 0.0
-                val squeal = sin(twoPi * 1864.0 * t) * 0.10 * pulse
-                val beatPhase = t % 2.0
-                val thump = if (beatPhase < 0.12)
-                    sin(twoPi * 40.0 * beatPhase) * (1.0 - beatPhase / 0.12) * 0.6 else 0.0
+                
+                // Глубокий гул (частота 40 Гц)
+                val drone = sin(twoPi * 40.0 * t) * 0.6
+                
+                // Медленный ритм
+                val pulse = if (sin(twoPi * 1.0 * t) > 0.9) 1.0 else 0.0
+                val squeal = sin(twoPi * 800.0 * t) * 0.15 * pulse
+                
+                // Резкий вдох/выдох
+                val beatPhase = t % 4.0
+                val thump = if (beatPhase < 0.2)
+                    sin(twoPi * 30.0 * beatPhase) * (1.0 - beatPhase / 0.2) * 0.8 else 0.0
+
                 val s = (drone + squeal + thump).coerceIn(-1.0, 1.0)
                 chunk[i] = (s * Short.MAX_VALUE).toInt().toShort()
                 sampleIndex++
