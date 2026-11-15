@@ -6,6 +6,7 @@ import android.media.AudioTrack
 import kotlin.concurrent.thread
 import kotlin.math.PI
 import kotlin.math.sin
+import kotlin.math.abs
 
 class ScaryMusic {
     @Volatile private var running = false
@@ -31,7 +32,8 @@ class ScaryMusic {
 
         val track = AudioTrack.Builder()
             .setAudioAttributes(AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_ALARM)
+                // USAGE_ALARM — чтобы музыка играла даже на беззвучном режиме
+                .setUsage(AudioAttributes.USAGE_ALARM) 
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                 .build())
             .setAudioFormat(AudioFormat.Builder()
@@ -52,19 +54,20 @@ class ScaryMusic {
             for (i in chunk.indices) {
                 val t = sampleIndex.toDouble() / sampleRate
                 
-                // Глубокий гул (частота 40 Гц)
-                val drone = sin(twoPi * 40.0 * t) * 0.6
+                // 1. Тяжелый бас (низкая частота, медленно нарастает)
+                val bassFreq = 30.0 + 10.0 * sin(twoPi * 0.1 * t) 
+                val bass = sin(twoPi * bassFreq * t) * 0.6
                 
-                // Медленный ритм
-                val pulse = if (sin(twoPi * 1.0 * t) > 0.9) 1.0 else 0.0
-                val squeal = sin(twoPi * 800.0 * t) * 0.15 * pulse
-                
-                // Резкий вдох/выдох
-                val beatPhase = t % 4.0
-                val thump = if (beatPhase < 0.2)
-                    sin(twoPi * 30.0 * beatPhase) * (1.0 - beatPhase / 0.2) * 0.8 else 0.0
+                // 2. Резкие высокочастотные всплески (каждые 2 секунды)
+                val beatPhase = t % 2.0
+                val highSqueal = if (beatPhase < 0.1) {
+                    sin(twoPi * 2000.0 * t) * abs(1.0 - beatPhase / 0.1) * 0.3
+                } else 0.0
 
-                val s = (drone + squeal + thump).coerceIn(-1.0, 1.0)
+                // 3. Фоновый шум/шипение (эффект старой кассеты/помех)
+                val noise = (Math.random() * 2 - 1) * 0.05
+
+                val s = (bass + highSqueal + noise).coerceIn(-1.0, 1.0)
                 chunk[i] = (s * Short.MAX_VALUE).toInt().toShort()
                 sampleIndex++
             }
