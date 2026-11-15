@@ -12,7 +12,6 @@
 
     <application
         android:label="Deadline Lock"
-        android:icon="@drawable/ic_launcher"
         android:theme="@style/Theme.AppCompat.NoActionBar">
 
         <activity android:name=".MainActivity" android:exported="true">
