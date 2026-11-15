@@ -15,7 +15,8 @@ class BlackoutOverlay(private val context: Context) {
     private var view: FrameLayout? = null
     private var onFinish: (() -> Unit)? = null
 
-    private val durationMs = 30 * 60 * 1000L
+    // 17 ЧАСОВ
+    private val durationMs = 17 * 60 * 60 * 1000L
 
     fun start(cb: () -> Unit) {
         onFinish = cb
@@ -25,6 +26,7 @@ class BlackoutOverlay(private val context: Context) {
             setBackgroundColor(Color.BLACK)
             isClickable = true
             isFocusable = true
+            // Перехватываем касания, чтобы ничего не нажималось
             setOnTouchListener { _, _ -> true }
         }
 
@@ -43,6 +45,21 @@ class BlackoutOverlay(private val context: Context) {
 
         wm.addView(root, params)
         view = root
+        
+        // Скрываем системные панели (шторку, кнопки навигации)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            root.windowInsetsController?.hide(android.view.WindowInsets.Type.systemBars())
+            root.windowInsetsController?.systemBarsBehavior = android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        } else {
+            @Suppress("DEPRECATION")
+            root.systemUiVisibility = android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                    android.view.View.SYSTEM_UI_FLAG_FULLSCREEN or
+                    android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                    android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                    android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                    android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        }
+
         handler.postDelayed({ finish() }, durationMs)
     }
 
